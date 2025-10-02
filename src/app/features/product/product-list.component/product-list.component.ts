@@ -1,24 +1,23 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ProductService } from '../product.service';
 import { Product } from '../product.model';
-import {CurrencyPipe} from '@angular/common';
 import { CommonModule } from '@angular/common';
+import { catchError } from 'rxjs/operators';
+import { of, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CurrencyPipe, CommonModule],
+  imports: [CommonModule],
   templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.css'
+  styleUrls: ['./product-list.component.css']
 })
-export class ProductListComponent implements OnInit {
-  constructor(private productService: ProductService){}
-  products: Product[] = [];
+export class ProductListComponent {
+  products$: Observable<Product[]>;
 
-  ngOnInit(): void {
-    this.productService.getProducts().subscribe({
-      next: (data) => this.products = data,
-      error: (err) => console.error('API Error:', err)
-    });
+  constructor(private productService: ProductService) {
+  this.products$ = this.productService.getProducts().pipe(
+      catchError(() => of([])) 
+    );
   }
 }
