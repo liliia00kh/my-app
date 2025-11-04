@@ -17,7 +17,7 @@ export class ProductService {
       filter((cfg): cfg is AppConfig => cfg !== null),
       take(1),
       switchMap(cfg => {
-        return this.http.get<Product[]>(`${cfg.apiUrl}/product`); })
+        return this.http.get<Product[]>(`${cfg.apiUrl}/product/longtask`); })
     );
   }
 }
