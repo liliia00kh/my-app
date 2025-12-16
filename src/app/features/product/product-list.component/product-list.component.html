@@ -1,5 +1,19 @@
-<ng-container *ngIf="products$ | async as products; else loading">
-  <div *ngIf="products.length > 0; else empty">
+<div class="product-actions">
+  <button (click)="startTask()" [disabled]="isTaskRunning">
+    Запустити запит
+  </button>
+  <button (click)="cancelTask()" [disabled]="!isTaskRunning">
+    Скасувати
+  </button>
+
+  <p *ngIf="lastTaskMessage">{{ lastTaskMessage }}</p>
+</div>
+
+<ng-container *ngIf="hasStarted; else idle">
+  <!-- Показуємо текст завантаження тільки поки немає жодних даних -->
+  <p *ngIf="isTaskRunning && !products">Завантаження продуктів...</p>
+
+  <ng-container *ngIf="products && products.length > 0; else empty">
     <div class="product-grid">
       <div class="product-card" *ngFor="let product of products">
         <img [src]="product.imageUrl" [alt]="product.name" />
@@ -7,18 +21,15 @@
         <p>{{ product.description }}</p>
         <p><strong>Price:</strong> {{ product.price | currency:'UAH' }}</p>
         <p><strong>Stock:</strong> {{ product.stockQuantity }}</p>
-        <p>Hello !!!!</p>
       </div>
     </div>
-  </div>
+  </ng-container>
 </ng-container>
 
-<!-- Завантаження -->
-<ng-template #loading>
-  <p>Завантаження продуктів...</p>
+<ng-template #idle>
+  <p>Натисніть "Запустити запит", щоб завантажити продукти.</p>
 </ng-template>
 
-<!-- Порожній список -->
 <ng-template #empty>
   <p>Немає доступних продуктів.</p>
 </ng-template>
