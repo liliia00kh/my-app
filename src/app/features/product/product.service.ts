@@ -20,8 +20,8 @@ export class ProductService {
       take(1),
       switchMap(cfg =>
         this.http
-          .get<Product[]>(`${cfg.apiUrl}/product/cancelable-task`)
-          .pipe(takeUntil(this.cancelTask$))
+        .get<Product[]>(`${cfg.apiUrl}/product/cancelable-task`)
+        .pipe(takeUntil(this.cancelTask$))
       )
     );
   }

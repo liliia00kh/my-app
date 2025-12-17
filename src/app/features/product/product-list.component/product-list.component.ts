@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
@@ -13,17 +13,17 @@ import { Product } from '../product.model';
   styleUrls: ['./product-list.component.css'],
 })
 export class ProductListComponent {
-  products: Product[] | null = null;
-  isTaskRunning = false;
-  hasStarted = false;
-  lastTaskMessage: string | null = null;
+  products = signal<Product[] | null>(null);
+  isTaskRunning = signal(false);
+  hasStarted = signal(false);
+  lastTaskMessage = signal<string | null>(null);
 
   private productsSub?: Subscription;
 
   constructor(private productService: ProductService) {}
 
   startTask(): void {
-    if (this.isTaskRunning) {
+    if (this.isTaskRunning()) {
       return;
     }
 
@@ -31,47 +31,44 @@ export class ProductListComponent {
     this.productService.cancelCancelableTask();
     this.productsSub?.unsubscribe();
 
-    this.hasStarted = true;
-    this.isTaskRunning = true;
-    this.lastTaskMessage = null;
-    this.products = null;
+    this.hasStarted.set(true);
+    this.isTaskRunning.set(true);
+    this.lastTaskMessage.set(null);
+    this.products.set(null);
 
     this.productsSub = this.productService
       .getProducts()
       .pipe(
         finalize(() => {
-          // safety: ensure we never stay stuck in loading state
-          this.isTaskRunning = false;
+          this.isTaskRunning.set(false);
         })
       )
       .subscribe({
         next: (products) => {
-          // as soon as we have data, stop showing loader and disable Cancel
-          this.isTaskRunning = false;
-          this.products = products;
+          this.products.set(products);
 
           if (!products.length) {
-            this.lastTaskMessage = 'Продукти не знайдено.';
+            this.lastTaskMessage.set('Продукти не знайдено.');
           } else {
-            this.lastTaskMessage = null;
+            this.lastTaskMessage.set(null);
           }
         },
         error: (err) => {
           console.error(err);
-          this.lastTaskMessage = 'Сталася помилка під час запиту.';
-          this.isTaskRunning = false;
+          this.lastTaskMessage.set('Сталася помилка під час запиту.');
+          this.isTaskRunning.set(false);
         },
       });
   }
 
   cancelTask(): void {
-    if (!this.isTaskRunning) {
+    if (!this.isTaskRunning()) {
       return;
     }
 
     this.productService.cancelCancelableTask();
     this.productsSub?.unsubscribe();
-    this.isTaskRunning = false;
-    this.lastTaskMessage = 'Запит скасовано.';
+    this.isTaskRunning.set(false);
+    this.lastTaskMessage.set('Запит скасовано.');
   }
 }

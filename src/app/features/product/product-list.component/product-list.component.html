@@ -1,35 +1,41 @@
 <div class="product-actions">
-  <button (click)="startTask()" [disabled]="isTaskRunning">
+  <button (click)="startTask()" [disabled]="isTaskRunning()">
     Запустити запит
   </button>
-  <button (click)="cancelTask()" [disabled]="!isTaskRunning">
+  <button (click)="cancelTask()" [disabled]="!isTaskRunning()">
     Скасувати
   </button>
 
-  <p *ngIf="lastTaskMessage">{{ lastTaskMessage }}</p>
+  @if (lastTaskMessage()) {
+    <p>{{ lastTaskMessage() }}</p>
+  }
 </div>
 
-<ng-container *ngIf="hasStarted; else idle">
-  <!-- Показуємо текст завантаження тільки поки немає жодних даних -->
-  <p *ngIf="isTaskRunning && !products">Завантаження продуктів...</p>
+@if (hasStarted()) {
+  <!-- Loader is visible while the task is running -->
+  @if (isTaskRunning()) {
+    <p>Завантаження продуктів...</p>
+  }
 
-  <ng-container *ngIf="products && products.length > 0; else empty">
-    <div class="product-grid">
-      <div class="product-card" *ngFor="let product of products">
-        <img [src]="product.imageUrl" [alt]="product.name" />
-        <h2>{{ product.name }}</h2>
-        <p>{{ product.description }}</p>
-        <p><strong>Price:</strong> {{ product.price | currency:'UAH' }}</p>
-        <p><strong>Stock:</strong> {{ product.stockQuantity }}</p>
+  <!-- After loading finishes and we have a products array (possibly empty),
+       show either the list or the 'no products' message -->
+  @if (!isTaskRunning() && products(); as productsList) {
+    @if (productsList.length > 0) {
+      <div class="product-grid">
+        @for (product of productsList; track product.id) {
+          <div class="product-card">
+            <img [src]="product.imageUrl" [alt]="product.name" />
+            <h2>{{ product.name }}</h2>
+            <p>{{ product.description }}</p>
+            <p><strong>Price:</strong> {{ product.price | currency:'UAH' }}</p>
+            <p><strong>Stock:</strong> {{ product.stockQuantity }}</p>
+          </div>
+        }
       </div>
-    </div>
-  </ng-container>
-</ng-container>
-
-<ng-template #idle>
+    } @else {
+      <p>Немає доступних продуктів.</p>
+    }
+  }
+} @else {
   <p>Натисніть "Запустити запит", щоб завантажити продукти.</p>
-</ng-template>
-
-<ng-template #empty>
-  <p>Немає доступних продуктів.</p>
-</ng-template>
+}
