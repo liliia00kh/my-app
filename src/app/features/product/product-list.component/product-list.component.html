@@ -1,26 +1,26 @@
 <div class="product-actions">
-  <button (click)="startTask()" [disabled]="isTaskRunning()">
+  <button (click)="startTask()" [disabled]="isTaskRunning">
     Запустити запит
   </button>
-  <button (click)="cancelTask()" [disabled]="!isTaskRunning()">
+  <button (click)="cancelTask()" [disabled]="!isTaskRunning">
     Скасувати
   </button>
 
-  @if (lastTaskMessage()) {
-    <p>{{ lastTaskMessage() }}</p>
+  @if (lastTaskMessage) {
+    <p>{{ lastTaskMessage }}</p>
   }
 </div>
 
-@if (hasStarted()) {
+@if (hasStarted) {
   <!-- Loader is visible while the task is running -->
-  @if (isTaskRunning()) {
+  @if (isTaskRunning) {
     <p>Завантаження продуктів...</p>
   }
 
   <!-- After loading finishes and we have a products array (possibly empty),
        show either the list or the 'no products' message -->
-  @if (!isTaskRunning() && products(); as productsList) {
-    @if (productsList.length > 0) {
+  @if (products$ | async; as productsList) {
+    @if (!isTaskRunning && productsList.length > 0) {
       <div class="product-grid">
         @for (product of productsList; track product.id) {
           <div class="product-card">
@@ -32,7 +32,7 @@
           </div>
         }
       </div>
-    } @else {
+    } @else if (!isTaskRunning) {
       <p>Немає доступних продуктів.</p>
     }
   }
